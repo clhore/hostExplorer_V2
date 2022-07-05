@@ -9,8 +9,9 @@
 Instalacion automatica
 ======
 
-  curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/hostExplorer && sudo chmod +x hostExplorer
-  sudo ./hostExplorer --install=true
+    curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/hostExplorer && sudo chmod +x hostExplorer
+    sudo ./hostExplorer --install=true
+
 
 Instalacion manual
 ======
