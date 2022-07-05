@@ -6,8 +6,11 @@
     <li>Esta herramienta cuneta con funciones, que permiten obtener IP, hostname, MAC, etc de los equipos detectados en la red.</li>
 </ul> 
 
-Ejemplo de escaneo
+Ejemplo de escaneo modo defauld
 ======
+    
+      hostExplorer -i 10.70.240.0 --mask 24
+
 <img src="img/example.png">
 
 
