@@ -25,4 +25,6 @@ Intalar las librerias de python:
     
 Help Panel
 ======
-<img src="img/help.png">
+<div align="center">
+  <img src="img/help.png">
+</div>
