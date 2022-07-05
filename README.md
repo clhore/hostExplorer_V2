@@ -6,6 +6,13 @@
     <li>Esta herramienta cuneta con funciones, que permiten obtener IP, hostname, MAC, etc de los equipos detectados en la red.</li>
 </ul> 
 
+Ejemplo de escaneo
+======
+div align="center">
+  <img src="img/example.png">
+</div>
+
+
 Instalacion automatica
 ======
 
