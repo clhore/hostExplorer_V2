@@ -8,7 +8,7 @@
 
 Ejemplo de escaneo
 ======
-div align="center">
+<div align="center">
   <img src="img/example.png">
 </div>
 
