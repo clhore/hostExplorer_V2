@@ -8,9 +8,7 @@
 
 Ejemplo de escaneo
 ======
-<div align="center">
-  <img src="img/example.png">
-</div>
+<img src="img/example.png">
 
 
 Instalacion automatica
