@@ -17,7 +17,7 @@ Si revisamos el trefico de la red, obserbaremos las peticiones icmp y dns que re
 <img src="img/dns_request.png">
 
 
-Ejemplo de escaneo modo defauld
+Ejemplo de escaneo TCP
 ======
 
       hostExplorer -i 10.70.240.0 --mask 24 -m 2
@@ -27,6 +27,17 @@ Si revisamos el trefico de la red, obserbaremos las peticiones icmp, dns y tcp q
 <img src="img/icmp_request_m2.png">
 <img src="img/dns_request_m2.png">
 <img src="img/tcp_request_m2.png">
+
+
+Ejemplo de escaneo UDP
+======
+
+      hostExplorer -i 10.70.240.0 --mask 24 -m 3
+
+<img src="img/example_m3.png">
+Si revisamos el trefico de la red, obserbaremos las peticiones icmp, dns y tcp que realiza la herramienta en el modo(3)[escaneo udp].
+<img src="img/icmp_request_m3.png">
+<img src="img/dns_request_m3.png">
 
 
 Instalacion automatica
