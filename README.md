@@ -12,9 +12,21 @@ Ejemplo de escaneo modo defauld
       hostExplorer -i 10.70.240.0 --mask 24
 
 <img src="img/example.png">
-Si revisamos el trefico de la red, obserbaremos las peticiones icmp y dns que realiza la herramienta en el modo default.
+Si revisamos el trefico de la red, obserbaremos las peticiones icmp y dns que realiza la herramienta en el modo default(1).
 <img src="img/icmp_request.png">
 <img src="img/dns_request.png">
+
+
+Ejemplo de escaneo modo defauld
+======
+
+      hostExplorer -i 10.70.240.0 --mask 24 -m 2
+
+<img src="img/example_m2.png">
+Si revisamos el trefico de la red, obserbaremos las peticiones icmp, dns y tcp que realiza la herramienta en el modo(2)[escaneo tcp].
+<img src="img/icmp_request_m2.png">
+<img src="img/dns_request_m2.png">
+<img src="img/tcp_request_m2.png">
 
 
 Instalacion automatica
