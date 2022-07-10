@@ -49,12 +49,22 @@ Instalacion automatica
 
 Instalacion manual
 ======
-Intalar las librerias de python: 
+Instalar las librerias de python: 
 
     pip3 install ipaddress
     pip3 install tabulate
     pip3 install icmplib
     pip3 install python3-nmap
+    
+    
+Instalacion de hostExplorer: 
+
+    sudo mkdir /opt/hostExplorer
+    cd /opt/hostExplorer
+    sudo curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/hostExplorer
+    sudo curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/oui_hex.txt
+    sudo chmod +x hostExplorer
+    sudo ln -s /opt/hostExplorer/hostExplorer
     
     
 Help Panel
