@@ -55,7 +55,15 @@ Instalar las librerias de python:
     pip3 install tabulate
     pip3 install icmplib
     pip3 install python3-nmap
-    
+    pip3 install progress
+    pip3 install pandas
+
+
+Instalar dependencias:
+
+    Arch Linux: sudo pacman -S nmap whiptail curl
+    Ubuntu: sudo apt-get install nmap whiptail curl
+
     
 Instalacion de hostExplorer: 
 
