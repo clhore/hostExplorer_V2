@@ -471,7 +471,7 @@ function net_scan(){
 		local CHECK_CODE=0; while [ $CHECK_CODE -ne 1 ]; do
 			local OUTPUT_PAYLOAD="$(extract_ip)"
 			CHECK_CODE=$(ip_info "$OUTPUT_PAYLOAD")
-		done
+		done; rm .tmp_list 2>/dev/null
 	fi
 }
 
