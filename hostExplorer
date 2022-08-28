@@ -1,0 +1,532 @@
+#!/usr/bin/bash
+
+# Author: Adrian Lujan Muñoz ( aka clhore )
+
+# Colours
+end="\033[0m\e[0m"
+green="\e[0;32m\033[1m"
+red="\e[0;31m\033[1m"
+blue="\e[0;34m\033[1m"
+yellow="\e[0;33m\033[1m"
+purple="\e[0;35m\033[1m"
+turquoise="\e[0;36m\033[1m"
+gray="\e[0;37m\033[1m"
+
+trap ctrl_c INT
+
+function ctrl_c(){
+	echo -e "\n${yellowColour}[*]${endColour}${grayColour}Saliendo${endColour}"
+	tput cnorm; exit 0
+}
+
+function help_panel(){
+	echo -e "${yellow}[*] ${end}${gray}USO:${end} ./NETscan -i <ip-addres> --mask <network-mask> [options]"
+	echo -e "\n\t${yellow}--system${end}\t-  ${gray}arch [0] | debian [1] | ubuntu [2] ${end}"
+	echo -e "\t${yellow}--sys${end}"
+	echo -e "\n\t${yellow}--install${end}\t-  ${gray}true  [ install the required packages ]${end}"
+	echo -e "\t\t\t   ${gray}false [ skip the installs the necessary packages ]${end}"
+  	echo -e "\t\t\t   ${gray}(defauld value is false${end})"
+	echo -e "\n\t${yellow}--mode  ${end}\t-  ${gray}0  [ host discovery through icmp ]${end}"
+  	echo -e "\t${yellow}-m      ${end}\t   ${gray}1  [ host discovery through icmp and dns (mac detection) ]${end}"
+  	echo -e "\t\t\t   ${gray}2  [ host discovery through tcp and dns (mac detection) ]${end}"
+	echo -e "\t\t\t   ${gray}3  [ host discovery through udp and dns (mac detection) ]${end}"
+	echo -e "\t\t\t   ${gray}(defauld value is 1${end})"
+  	echo -e "\n\t${yellow}--verbose${end}\t-  ${gray}[ VERBOSE ]${end}"
+  	echo -e "\t${yellow}-v${end}"
+	echo -e "\n\t${yellow}--gui${end}\t\t-  ${gray}[ GUI mode ]${end}"
+        echo -e "\t${yellow}-G${end}"
+	echo -e ''; exit 0
+}
+
+function set_value_gui(){
+	case $1 in
+		"IP")		IP=$(whiptail --title "hostExplorer - by Adrián Luján Muñoz" --inputbox "Set ip address (Ej: 10.70.240.180):" 8 78 3>&1 1>&2 2>&3)
+		;;
+
+		"VERBOSE")	whiptail --title "hostExplorer - by Adrián Luján Muñoz" --yesno "Set verbose value (Default on)" --yes-button "ON" --no-button "OFF" 8 40
+				if [ $? -eq 0 ]; then VERBOSE="True"; else VERBOSE="False"; fi
+		;;
+
+		"SCAN MODE")	SCAN_MODE=$(
+					whiptail --title "hostExplorer - by Adrián Luján Muñoz" --menu "Select scan mode:" 20 100 10 \
+						"0" "ICMP" \
+						"1" "ICMP DNS" \
+						"2" "ICMP DNS TCP" \
+						"3" "ICMP UDP" 3>&1 1>&2 2>&3
+				)
+		;;
+
+		"NETWORK MASK")	NETWORK_MASK=$(whiptail --title "hostExplorer - by Adrián Luján Muñoz" --inputbox "Set network mask (Ej: 24|255.255.255.0):" 8 78 3>&1 1>&2 2>&3)
+		;;
+	esac
+}
+
+function value_info(){
+	case $1 in
+		"0")
+			whiptail --title "hostExplorer - by Adrián Luján Muñoz" --yes-button "set" --no-button "next" --yesno "
+        Info scan:
+
+                VERBOSE :       $VERBOSE
+                SCAN MODE :     $SCAN_MODE
+                NETWORK MASK :  $NETWORK_MASK
+			" 16 78 3>&2 2>&1 1>&3; return $?
+		;;
+
+		"1")
+			whiptail --title "hostExplorer - by Adrián Luján Muñoz" --yes-button "set" --no-button "next" --yesno "
+        Info scan:
+
+                VERBOSE :       $VERBOSE
+                SCAN MODE :     $SCAN_MODE
+                NETWORK MASK :  $NETWORK_MASK
+                IPADDRESS :     $IP
+			" 16 78 3>&2 2>&1 1>&3; return $?
+		;;
+	esac
+}
+
+function defauld_value(){
+#       variables["--install"]="INSTALL"
+	if [ -z "$INSTALL" ]; then INSTALL="false"; fi
+
+#       variables["-m"]="SCAN_MODE"
+	if [ -z "$SCAN_MODE" ]; then SCAN_MODE="1"; fi
+
+#       variables["--mask"]="NETWORK_MASK"
+	if [ -z "$NETWORK_MASK" ]; then NETWORK_MASK=24; fi
+
+#	variables["-v"]="VERBOSE"
+#	if [ -z "$VERBOSE" ]; then VERBOSE="False"; fi
+
+#	GUI MODE
+	if [ "$GUI_MODE" == "True" ]; then
+		value_info "0"; if [ $? -eq 0 ]; then
+			local CHECK_CODE=0; while [ $CHECK_CODE -ne 1 ]; do
+                        	local OPT=$(
+					whiptail --title "hostExplorer - by Adrián Luján Muñoz" --menu "Set scan config" 20 100 10 \
+						"IP" "" \
+						"VERBOSE" "" \
+						"SCAN MODE" "" \
+						"NETWORK MASK" "" \
+						"NEXT" "" \
+						"EXIT" "" 3>&1 1>&2 2>&3
+				)
+
+				if [ "$OPT" == "NEXT" ]; then value_info "1"; if [ $? -eq 1 ]; then CHECK_CODE=1; fi; fi
+                        	if [ "$OPT" == "EXIT" ]; then ctrl_c; fi
+				set_value_gui "$OPT"
+                	done
+		fi; if [ -z "$IP" ]; then set_value_gui "IP"; fi
+	fi
+}
+
+function system_user(){
+	until [[ $SYSTEM_USER =~ (arch|debian|ubuntu) ]]; do
+		echo -ne "${yellow}[*] Sistema operativo [arch/debian/ubuntu]: ${end}" & read SYSTEM_USER
+
+		if [ "$SYSTEM_USER" == "0" ]; then SYSTEM_USER="arch"; fi
+		if [ "$SYSTEM_USER" == "1" ]; then SYSTEM_USER="debian"; fi
+		if [ "$SYSTEM_USER" == "2" ]; then SYSTEM_USER="ubuntu"; fi
+	done
+}
+
+function install_tool(){
+	PROGRAM_INSTALL=$1; case $SYSTEM_USER in
+		"ubuntu")
+			apt-get install $PROGRAM_INSTALL &>/dev/null
+			if [ $? -ne 0 ]; then echo -e "${red}:: Error install $1${end}"; fi
+		;;
+		"debian")
+                        apt-get install $PROGRAM_INSTALL &>/dev/null
+                        if [ $? -ne 0 ]; then echo -e "${red}:: Error install $1${end}"; fi
+                ;;
+		"arch")
+			pacman --noconfirm $PROGRAM_INSTALL &>/dev/null
+			if [ $? -ne 0 ]; then echo -e "${red}:: Error install $1${end}"; fi
+		;;
+	esac
+}
+
+function dependencies(){
+	tput civis; system_user
+	clear; DEPENDENCIES=(nmap whiptail curl); PYTHON_LIBRARY=(ipaddress tabulate icmplib python3-nmap progress pandas)
+
+	for PROGRAM in "${DEPENDENCIES[@]}"; do
+		test -f /usr/bin/$PROGRAM
+                if [ $? -ne 0 ]; then install_tool $PROGRAM; fi
+	done
+
+	for LIBRARY in "${PYTHON_LIBRARY[@]}"; do
+		pip3 install $LIBRARY
+                if [ $? -ne 0 ]; then echo -e "${red}:: Error install $LIBRARY${end}"; fi
+        done
+
+	test -f /opt/hostExplorer/hostExplorer
+	if [ $? -ne 0 ]; then
+		mkdir /opt/hostExplorer &>/dev/null; cd /opt/hostExplorer
+		curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/hostExplorer &>/dev/null
+		curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/oui_hex.txt &>/dev/null
+		chmod +x hostExplorer &>/dev/null; ln -s /opt/hostExplorer/hostExplorer /bin/hostExplorer &>/dev/null
+	else
+		rm -rf /opt/hostExplorer &>/dev/null; mkdir /opt/hostExplorer &>/dev/null; cd /opt/hostExplorer
+                curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/hostExplorer &>/dev/null
+                curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/oui_hex.txt &>/dev/null
+                chmod +x hostExplorer &>/dev/null; ln -s /opt/hostExplorer/hostExplorer /bin/hostExplorer &>/dev/null
+	fi
+
+	echo -e "${gray}:: Proceso de instalacion terminado${end}"; ctrl_c
+}
+
+function python_scan(){
+	printf "
+#!/bin/python3
+from ipaddress import ip_network, IPv4Address, IPv4Interface
+from progress.bar import Bar, ChargingBar
+from tabulate import tabulate
+from icmplib import ping
+from os import system
+import pandas as pd
+import threading
+import socket
+import nmap3
+
+global IP_INFO_LIST, DATA_BASE_OUI
+IP_INFO_LIST = list()
+DATA_BASE_OUI = '/opt/hostExplorer/oui_hex.txt'
+
+def client_list(_RED, _MASK):
+	IP_LIST = list(
+		ip_network(
+			'{red}/{mask}'.format(
+				red=_RED,
+				mask=_MASK
+			)
+		)
+	)
+
+	return IP_LIST
+
+def mask_parsec(_RED, _MASK):
+	try:
+		return IPv4Interface(
+			'{red}/{mask}'.format(
+				red=_RED,
+				mask=_MASK
+				)
+			).with_netmask.split('/')[1]
+
+	except:
+		return '255.255.255.0'
+
+def icmp_scan(IP: str):
+	try:
+		HOST = ping(IP, count=1, privileged=False)
+		return HOST.is_alive
+	except:
+		return False
+
+def tcp_scan(IP: str):
+	LIST_PORTS = [135, 137, 138, 139, 445, 548, 631, 20, 21, 22, 23, 25, 80, 111, 443, 445, 631, 993, 995]
+	s = socket.socket(
+			socket.AF_INET,
+			socket.SOCK_STREAM
+		)
+	socket.setdefaulttimeout(1)
+
+	for PORT in LIST_PORTS:
+		r = s.connect_ex(
+			(
+				IP,
+				PORT
+			)
+		)
+		s.close()
+		#print('{}	{}'.format(IP, r))
+		if r == 111:
+			return True
+	return False
+
+def udp_scan(IP: str):
+	LIST_PORTS = [53]
+	s = socket.socket(
+	        socket.AF_INET,
+          socket.SOCK_DGRAM
+	)
+	socket.setdefaulttimeout(1)
+
+	for PORT in LIST_PORTS:
+		r = s.connect_ex((IP,PORT))
+		if r == 0:
+			return True
+	return False
+
+def hostname_scan(IP: str):
+	try:
+		HOST_INFO = nmap3.NmapScanTechniques().nmap_ping_scan(IP)
+
+		try:
+			HOSTNAME = HOST_INFO[IP]['hostname'][0]['name']
+		except:
+			HOSTNAME = False
+
+		try:
+			MACADDRES = HOST_INFO[IP]['macaddress']['addr']
+		except:
+			MACADDRES = False
+
+		return HOSTNAME, MACADDRES
+	except:
+		return False, False
+
+
+class Hilo(threading.Thread):
+	def __init__(self, IP_LIST, ICMP=True, TCP=None, UDP=None, HOSTNAME=None, VERBOSE=False):
+		threading.Thread.__init__(self)
+		self.IP_LIST = IP_LIST
+		self.ICMP = ICMP
+		self.TCP = TCP
+		self.UDP = UDP
+		self.HOSTNAME = HOSTNAME
+		self.VERBOSE = VERBOSE
+
+	def run(self):
+		ERR_ICMP = None; ERR_TCP = None; ERR_UDP = None; HOSTNAME = None; MACADDRES = None
+
+		for IP in self.IP_LIST:
+			if self.ICMP:
+				ERR_ICMP = icmp_scan(str(IP))
+
+			if self.TCP:
+				ERR_TCP = tcp_scan(str(IP))
+
+			if self.UDP:
+				ERR_UDP = udp_scan(str(IP))
+
+			if ( ( ERR_ICMP ) or ( ERR_TCP ) or ( ERR_UDP )) and ( self.HOSTNAME ):
+				HOSTNAME, MACADDRES = hostname_scan(str(IP))
+
+			IP_INFO = {
+				'ip': str(IP),
+				'hostname': HOSTNAME,
+				'macaddres': MACADDRES,
+				'icmp': ERR_ICMP,
+				'tcp': ERR_TCP,
+				'udp': ERR_UDP
+			}
+
+			if ( ERR_ICMP ) or ( ERR_TCP ):
+				IP_INFO_LIST.append(IP_INFO)
+
+			if ( ERR_ICMP or ERR_TCP ) and ( self.VERBOSE ):
+				print(
+					'{}	ONLINE'.format(
+						IP_INFO['ip']
+					)
+				)
+
+			ERR_ICMP = None; ERR_TCP = None; ERR_UDP = None; HOSTNAME = None; MACADDRES = None
+
+def net_scan(IP_LIST, ICMP=True, HOSTNAME=True, TCP=False, UDP=False, VERBOSE=False):
+	NUM_IP = len(IP_LIST)
+	THREADS = 3
+	NUM_THREADS = int((NUM_IP / THREADS))+1
+
+	#print(NUM_THREADS)
+	#print(NUM_IP)
+	#print(NUM_IP / NUM_THREADS)
+
+	COUNT=0
+	THREAD_LIST = list()
+	for i in range(NUM_THREADS):
+		_IP_LIST = IP_LIST[COUNT:COUNT+3]
+		#print(_IP_LIST)
+		THREAD = Hilo(_IP_LIST, ICMP=True, TCP=TCP, UDP=UDP, HOSTNAME=HOSTNAME, VERBOSE=VERBOSE)
+		THREAD.start()
+		THREAD_LIST.append(THREAD)
+		COUNT += 3
+
+	for THREAD in THREAD_LIST:
+		THREAD.join()
+
+def oui_detection(MACADDRES):
+	OUI = MACADDRES[0:8] #.replace(':', '-')
+	with open(DATA_BASE_OUI, 'r') as file:
+		while (line := file.readline().rstrip()):
+			if OUI in line:
+				return line.split(',')[1]
+	return False
+
+def csv_data(LISTA):
+	try:
+		df = pd.json_normalize(LISTA)
+		df.to_csv('.tmp_list')
+		return 'GUI_MODE'
+	except:
+		return False
+
+def create_table(LISTA, SCAN_MODE, GUI_MODE=False):
+	if SCAN_MODE == 0:
+		DATA_FILE = {
+                        'ip': [i['ip'] for i in LISTA],
+                        'status': ['ONLINE' for i in LISTA]
+		}
+
+	if SCAN_MODE == 1:
+		DATA_FILE = {
+			'ip': [i['ip'] for i in LISTA],
+			'hostname': [i['hostname'] for i in LISTA],
+			'macaddres': [i['macaddres'] for i in LISTA],
+			'oui': [oui_detection(i['macaddres']) if i['macaddres'] is not False else i['macaddres'] for i in LISTA],
+			'status': ['ONLINE' for i in LISTA]
+		}
+
+	if SCAN_MODE == 2:
+		DATA_FILE = {
+                        'ip': [i['ip'] for i in LISTA],
+                        'hostname': [i['hostname'] for i in LISTA],
+                        'macaddres': [i['macaddres'] for i in LISTA],
+                        'oui': [oui_detection(i['macaddres']) if i['macaddres'] is not False else i['macaddres'] for i in LISTA],
+                        'status': ['ONLINE' for i in LISTA]
+                }
+
+	if SCAN_MODE == 3:
+		DATA_FILE = {
+                        'ip': [i['ip'] for i in LISTA],
+                        'hostname': [i['hostname'] for i in LISTA],
+                        'macaddres': [i['macaddres'] for i in LISTA],
+                        'oui': [oui_detection(i['macaddres']) if i['macaddres'] is not False else i['macaddres'] for i in LISTA],
+                        'status': ['ONLINE' for i in LISTA]
+                }
+
+	if not GUI_MODE:
+		TABLE = tabulate(DATA_FILE, headers=[i.upper() for i in DATA_FILE], showindex=True)
+
+	if GUI_MODE:
+		DATA_FILE=list()
+		for i in LISTA:
+			i['oui'] = oui_detection(str(i['macaddres']))
+			DATA_FILE.append(i)
+		TABLE = csv_data(DATA_FILE)
+
+	return TABLE
+
+def main():
+	RED = '%s'
+	MASK = '%s'
+	SCAN_MODE = %s
+	VERBOSE = %s
+	GUI_MODE = %s
+
+	MASK = mask_parsec(RED, MASK)
+	IP_LIST = client_list(RED, MASK)
+
+	if SCAN_MODE == 0:
+		net_scan(IP_LIST, ICMP=True, HOSTNAME=False, TCP=False, UDP=False, VERBOSE=VERBOSE)
+	if SCAN_MODE == 1:
+		net_scan(IP_LIST, ICMP=True, HOSTNAME=True, TCP=False, UDP=False, VERBOSE=VERBOSE)
+	if SCAN_MODE == 2:
+		net_scan(IP_LIST, ICMP=False, HOSTNAME=True, TCP=True, UDP=False, VERBOSE=VERBOSE)
+	if SCAN_MODE == 3:
+		net_scan(IP_LIST, ICMP=False, HOSTNAME=True, TCP=False, UDP=True, VERBOSE=VERBOSE)
+
+	TABLE = create_table(IP_INFO_LIST, SCAN_MODE, GUI_MODE)
+	print(TABLE)
+
+if __name__ == '__main__':
+	main()
+	" "$1" "$2" "$3" "$4" "$5"
+}
+
+function extract_ip(){
+	printf 'whiptail --title "hostExplorer - by Adrián Luján Muñoz" --menu "Network info" 20 100 10' > payloud
+	while IFS="," read -r ID IP HOSTNAME MACADDRES ICMP TCP UDP OUI; do printf " '%s' '        ONLINE'" $IP >> payloud; done < .tmp_list
+
+	/usr/bin/bash payloud 3>&1 1>&2 2>out; rm payloud 2>/dev/null
+	echo "$(cat out)"; rm out 2>/dev/null
+}
+
+function ip_info() {
+	while IFS="," read -r ID IP HOSTNAME MACADDRES ICMP TCP UDP OUI; do
+		local CHECK_CODE=$(printf "err = 0 if '%s' == '%s' else 1; print(err)" "$IP" "$1" | python3)
+		if [ "$CHECK_CODE" == "0" ]; then #if grep -q "$IP" <<< "$1"; then
+			whiptail --title "hostExplorer - by Adrián Luján Muñoz" --yes-button "back" --no-button "exit" --yesno "
+        Network host info:
+
+		IP :         $IP
+		HOSTNAME :   $HOSTNAME
+		MACADDRES :  $MACADDRES
+		OUI :        $OUI
+				" 16 78 3>&2 2>&1 1>&3
+			echo $?
+		fi
+	done < .tmp_list
+}
+
+function net_scan(){
+#	if [ "$GUI_MODE" == "True" ]; then variable
+
+	python_scan "$IP" "$NETWORK_MASK" "$SCAN_MODE" "$VERBOSE" "$GUI_MODE" | python3 2>/dev/null
+
+	if [ "$GUI_MODE" == "True" ]; then
+		local CHECK_CODE=0; while [ $CHECK_CODE -ne 1 ]; do
+			local OUTPUT_PAYLOAD="$(extract_ip)"
+			CHECK_CODE=$(ip_info "$OUTPUT_PAYLOAD")
+		done; rm .tmp_list 2>/dev/null
+	fi
+}
+
+if [ $(id -u) -eq 0 ]; then
+	declare -A ARRAY=([-h]="-h" [--help]="--help" [--h]="--h" [-help]="-help")
+	for i in "${ARRAY[@]}"; do
+		if [ $1 ]; then env test ${ARRAY[$1]+_} 2>/dev/null && help_panel; fi
+	done
+
+	declare VERBOSE="False"
+	for i in "$@"; do if [[ "$i" == "--verbose" || "$i" == "-v" ]]; then VERBOSE="True"; fi; done
+
+	declare GUI_MODE="False"
+        for i in "$@"; do if [[ "$i" == "--gui" || "$i" == "-G" ]]; then GUI_MODE="True"; fi; done
+
+	declare -i INDEX=1
+	declare -A ARGUMENTS=(); declare -A VARIABLES=()
+
+	VARIABLES["--system"]="SYSTEM_USER"
+	VARIABLES["--sys"]="SYSTEM_USER"
+	VARIABLES["--install"]="INSTALL"
+	VARIABLES["--mode"]="SCAN_MODE"
+	VARIABLES["--ip"]="IP"
+	VARIABLES["--mask"]="NETWORK_MASK"
+
+	VARIABLES["-n"]="networkCard"
+	VARIABLES["-m"]="SCAN_MODE"
+	VARIABLES["-i"]="IP"
+
+	for i in "$@"; do
+		ARGUMENTS[$INDEX]=$i;
+		PREV_INDEX="$(expr $INDEX - 1)";
+
+		if [[ $i == *"="* ]]; then ARGUMENT_LABEL=${i%=*}
+    		else ARGUMENT_LABEL=${ARGUMENTS[$PREV_INDEX]}; fi
+
+  		if [[ -n $ARGUMENT_LABEL ]]; then
+    			if [[ -n ${VARIABLES[$ARGUMENT_LABEL]} ]]; then
+      				if [[ $i == *"="* ]]; then
+					declare ${VARIABLES[$ARGUMENT_LABEL]}=${i#$ARGUMENT_LABEL=}
+        			else
+					declare ${VARIABLES[$ARGUMENT_LABEL]}=${ARGUMENTS[$INDEX]}
+      				fi
+    			fi
+  		fi
+
+  		INDEX=INDEX+1;
+	done; defauld_value
+
+	if [ "${HELP_PANEL,,}" == "true" ]; then help_panel; fi
+
+	if [ "${INSTALL,,}" == "true" ]; then dependencies; fi
+
+	if [[ -n "$IP" || "$GUI_MODE" == "True" ]]; then net_scan; fi
+else
+	echo -e "${red}Ejecute el script como root${end}"
+fi; ctrl_c
