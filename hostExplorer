@@ -134,11 +134,11 @@ function system_user(){
 function install_tool(){
 	PROGRAM_INSTALL=$1; case $SYSTEM_USER in
 		"ubuntu")
-			apt-get install $PROGRAM_INSTALL &>/dev/null
+			apt-get install $PROGRAM_INSTALL -y &>/dev/null
 			if [ $? -ne 0 ]; then echo -e "${red}:: Error install $1${end}"; fi
 		;;
 		"debian")
-                        apt-get install $PROGRAM_INSTALL &>/dev/null
+                        apt-get install $PROGRAM_INSTALL -y &>/dev/null
                         if [ $? -ne 0 ]; then echo -e "${red}:: Error install $1${end}"; fi
                 ;;
 		"arch")
