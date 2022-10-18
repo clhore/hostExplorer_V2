@@ -58,6 +58,11 @@ Instalar las librerias de python:
     pip3 install progress
     pip3 install pandas
 
+or
+
+    curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/requirements.txt
+    python3 -m pip install -r requirements.txt
+
 
 Instalar dependencias:
 
