@@ -3,52 +3,69 @@
 # Author: Adrian Lujan Muñoz ( aka clhore )
 
 # Colours
-end="\033[0m\e[0m"
-green="\e[0;32m\033[1m"
-red="\e[0;31m\033[1m"
-blue="\e[0;34m\033[1m"
-yellow="\e[0;33m\033[1m"
-purple="\e[0;35m\033[1m"
-turquoise="\e[0;36m\033[1m"
-gray="\e[0;37m\033[1m"
+export end="\033[0m\e[0m"
+export green="\e[0;32m\033[1m"
+export red="\e[0;31m\033[1m"
+export blue="\e[0;34m\033[1m"
+export yellow="\e[0;33m\033[1m"
+export purple="\e[0;35m\033[1m"
+export turquoise="\e[0;36m\033[1m"
+export gray="\e[0;37m\033[1m"
+
+# Commands path
+export ECHO="/usr/bin/echo"
+export TPUT="/usr/bin/tput"
+export RM="/usr/bin/rm"
+export WHIPTAIL="/usr/bin/whiptail"
+export PYTHON3="/usr/bin/python3"
+export APT="/usr/bin/apt"
+export PACMAN="/usr/bin/pacman"
+export CLEAR="/usr/bin/clear"
+export CURL="/usr/bin/curl"
+export MKDIR="/usr/bin/mkdir"
+export CHMOD="/usr/bin/chmod"
+export LN="/usr/bin/ln"
 
 trap ctrl_c INT
 
 function ctrl_c(){
-	echo -e "\n${yellowColour}[*]${endColour}${grayColour}Saliendo${endColour}"
-	tput cnorm; exit 0
+	$ECHO -e "\n${yellowColour}[*]${endColour}${grayColour}Saliendo${endColour}"
+	$TPUT cnorm; exit 0
 }
 
 function help_panel(){
-	echo -e "${yellow}[*] ${end}${gray}USO:${end} ./NETscan -i <ip-addres> --mask <network-mask> [options]"
-	echo -e "\n\t${yellow}--system${end}\t-  ${gray}arch [0] | debian [1] | ubuntu [2] ${end}"
-	echo -e "\t${yellow}--sys${end}"
-	echo -e "\n\t${yellow}--install${end}\t-  ${gray}true  [ install the required packages ]${end}"
-	echo -e "\t\t\t   ${gray}false [ skip the installs the necessary packages ]${end}"
-  	echo -e "\t\t\t   ${gray}(defauld value is false${end})"
-	echo -e "\n\t${yellow}--mode  ${end}\t-  ${gray}0  [ host discovery through icmp ]${end}"
-  	echo -e "\t${yellow}-m      ${end}\t   ${gray}1  [ host discovery through icmp and dns (mac detection) ]${end}"
-  	echo -e "\t\t\t   ${gray}2  [ host discovery through tcp and dns (mac detection) ]${end}"
-	echo -e "\t\t\t   ${gray}3  [ host discovery through udp and dns (mac detection) ]${end}"
-	echo -e "\t\t\t   ${gray}(defauld value is 1${end})"
-  	echo -e "\n\t${yellow}--verbose${end}\t-  ${gray}[ VERBOSE ]${end}"
-  	echo -e "\t${yellow}-v${end}"
-	echo -e "\n\t${yellow}--gui${end}\t\t-  ${gray}[ GUI mode ]${end}"
-        echo -e "\t${yellow}-G${end}"
-	echo -e ''; exit 0
+	$ECHO -e "${yellow}[*] ${end}${gray}USO:${end} ./NETscan -i <ip-addres> --mask <network-mask> [options]"
+	$ECHO -e "\n\t${yellow}--system${end}\t-  ${gray}arch [0] | debian [1] | ubuntu [2] ${end}"
+	$ECHO -e "\t${yellow}--sys${end}"
+	$ECHO -e "\n\t${yellow}--install${end}\t-  ${gray}true  [ install the required packages ]${end}"
+	$ECHO -e "\t\t\t   ${gray}false [ skip the installs the necessary packages ]${end}"
+  	$ECHO -e "\t\t\t   ${gray}(defauld value is false${end})"
+	$ECHO -e "\n\t${yellow}--mode  ${end}\t-  ${gray}0  [ host discovery through icmp ]${end}"
+  	$ECHO -e "\t${yellow}-m      ${end}\t   ${gray}1  [ host discovery through icmp and dns (mac detection) ]${end}"
+  	$ECHO -e "\t\t\t   ${gray}2  [ host discovery through tcp and dns (mac detection) ]${end}"
+	$ECHO -e "\t\t\t   ${gray}3  [ host discovery through udp and dns (mac detection) ]${end}"
+	$ECHO -e "\t\t\t   ${gray}(defauld value is 1${end})"
+  	$ECHO -e "\n\t${yellow}--verbose${end}\t-  ${gray}[ VERBOSE ]${end}"
+  	$ECHO -e "\t${yellow}-v${end}"
+	$ECHO -e "\n\t${yellow}--gui${end}\t\t-  ${gray}[ GUI mode ]${end}"
+    $ECHO -e "\t${yellow}-G${end}"
+	$ECHO -e ''; exit 0
 }
 
 function set_value_gui(){
 	case $1 in
-		"IP")		IP=$(whiptail --title "hostExplorer - by Adrián Luján Muñoz" --inputbox "Set ip address (Ej: 10.70.240.180):" 8 78 3>&1 1>&2 2>&3)
+		"IP")
+				IP=$($WHIPTAIL --title "hostExplorer - by Adrián Luján Muñoz" --inputbox "Set ip address (Ej: 10.70.240.180):" 8 78 3>&1 1>&2 2>&3)
 		;;
 
-		"VERBOSE")	whiptail --title "hostExplorer - by Adrián Luján Muñoz" --yesno "Set verbose value (Default on)" --yes-button "ON" --no-button "OFF" 8 40
-				if [ $? -eq 0 ]; then VERBOSE="True"; else VERBOSE="False"; fi
+		"VERBOSE")
+				$WHIPTAIL --title "hostExplorer - by Adrián Luján Muñoz" --yesno "Set verbose value (Default on)" --yes-button "ON" --no-button "OFF" 8 40
+				if [ $? -eq 0 ]; then VERBOSE="True"; return 0; fi; VERBOSE="False"
 		;;
 
-		"SCAN MODE")	SCAN_MODE=$(
-					whiptail --title "hostExplorer - by Adrián Luján Muñoz" --menu "Select scan mode:" 20 100 10 \
+		"SCAN MODE")	
+				SCAN_MODE=$(
+					$WHIPTAIL --title "hostExplorer - by Adrián Luján Muñoz" --menu "Select scan mode:" 20 100 10 \
 						"0" "ICMP" \
 						"1" "ICMP DNS" \
 						"2" "ICMP DNS TCP" \
@@ -56,7 +73,8 @@ function set_value_gui(){
 				)
 		;;
 
-		"NETWORK MASK")	NETWORK_MASK=$(whiptail --title "hostExplorer - by Adrián Luján Muñoz" --inputbox "Set network mask (Ej: 24|255.255.255.0):" 8 78 3>&1 1>&2 2>&3)
+		"NETWORK MASK")	
+				NETWORK_MASK=$($WHIPTAIL --title "hostExplorer - by Adrián Luján Muñoz" --inputbox "Set network mask (Ej: 24|255.255.255.0):" 8 78 3>&1 1>&2 2>&3)
 		;;
 	esac
 }
@@ -64,7 +82,7 @@ function set_value_gui(){
 function value_info(){
 	case $1 in
 		"0")
-			whiptail --title "hostExplorer - by Adrián Luján Muñoz" --yes-button "set" --no-button "next" --yesno "
+			$WHIPTAIL --title "hostExplorer - by Adrián Luján Muñoz" --yes-button "set" --no-button "next" --yesno "
         Info scan:
 
                 VERBOSE :       $VERBOSE
@@ -74,7 +92,7 @@ function value_info(){
 		;;
 
 		"1")
-			whiptail --title "hostExplorer - by Adrián Luján Muñoz" --yes-button "set" --no-button "next" --yesno "
+			$WHIPTAIL --title "hostExplorer - by Adrián Luján Muñoz" --yes-button "set" --no-button "next" --yesno "
         Info scan:
 
                 VERBOSE :       $VERBOSE
@@ -103,8 +121,8 @@ function defauld_value(){
 	if [ "$GUI_MODE" == "True" ]; then
 		value_info "0"; if [ $? -eq 0 ]; then
 			local CHECK_CODE=0; while [ $CHECK_CODE -ne 1 ]; do
-                        	local OPT=$(
-					whiptail --title "hostExplorer - by Adrián Luján Muñoz" --menu "Set scan config" 20 100 10 \
+                local OPT=$(
+					$WHIPTAIL --title "hostExplorer - by Adrián Luján Muñoz" --menu "Set scan config" 20 100 10 \
 						"IP" "" \
 						"VERBOSE" "" \
 						"SCAN MODE" "" \
@@ -114,16 +132,15 @@ function defauld_value(){
 				)
 
 				if [ "$OPT" == "NEXT" ]; then value_info "1"; if [ $? -eq 1 ]; then CHECK_CODE=1; fi; fi
-                        	if [ "$OPT" == "EXIT" ]; then ctrl_c; fi
-				set_value_gui "$OPT"
-                	done
+                if [ "$OPT" == "EXIT" ]; then ctrl_c; fi; set_value_gui "$OPT"
+            done
 		fi; if [ -z "$IP" ]; then set_value_gui "IP"; fi
 	fi
 }
 
 function system_user(){
 	until [[ $SYSTEM_USER =~ (arch|debian|ubuntu) ]]; do
-		echo -ne "${yellow}[*] Sistema operativo [arch/debian/ubuntu]: ${end}" & read SYSTEM_USER
+		$ECHO -ne "${yellow}[*] Sistema operativo [arch/debian/ubuntu]: ${end}" & read SYSTEM_USER
 
 		if [ "$SYSTEM_USER" == "0" ]; then SYSTEM_USER="arch"; fi
 		if [ "$SYSTEM_USER" == "1" ]; then SYSTEM_USER="debian"; fi
@@ -134,23 +151,23 @@ function system_user(){
 function install_tool(){
 	PROGRAM_INSTALL=$1; case $SYSTEM_USER in
 		"ubuntu")
-			apt-get install $PROGRAM_INSTALL -y &>/dev/null
-			if [ $? -ne 0 ]; then echo -e "${red}:: Error install $1${end}"; fi
+			$APT install $PROGRAM_INSTALL -y &>/dev/null
+			if [ $? -ne 0 ]; then $ECHO -e "${red}:: Error install $1${end}"; fi
 		;;
 		"debian")
-                        apt-get install $PROGRAM_INSTALL -y &>/dev/null
-                        if [ $? -ne 0 ]; then echo -e "${red}:: Error install $1${end}"; fi
+            $APT install $PROGRAM_INSTALL -y &>/dev/null
+            if [ $? -ne 0 ]; then $ECHO -e "${red}:: Error install $1${end}"; fi
                 ;;
 		"arch")
-			pacman --noconfirm $PROGRAM_INSTALL &>/dev/null
-			if [ $? -ne 0 ]; then echo -e "${red}:: Error install $1${end}"; fi
+			$PACMAN --noconfirm $PROGRAM_INSTALL &>/dev/null
+			if [ $? -ne 0 ]; then $ECHO -e "${red}:: Error install $1${end}"; fi
 		;;
 	esac
 }
 
 function dependencies(){
-	tput civis; system_user
-	clear; DEPENDENCIES=(nmap whiptail curl); PYTHON_LIBRARY=(ipaddress tabulate icmplib python3-nmap progress pandas)
+	$TPUT civis; system_user
+	$CLEAR; DEPENDENCIES=(nmap whiptail curl python3); PYTHON_LIBRARY=(ipaddress tabulate icmplib python3-nmap progress pandas)
 
 	for PROGRAM in "${DEPENDENCIES[@]}"; do
 		test -f /usr/bin/$PROGRAM
@@ -158,24 +175,24 @@ function dependencies(){
 	done
 
 	for LIBRARY in "${PYTHON_LIBRARY[@]}"; do
-		pip3 install $LIBRARY
-                if [ $? -ne 0 ]; then echo -e "${red}:: Error install $LIBRARY${end}"; fi
+		$PYTHON3 -m pip install $LIBRARY
+                if [ $? -ne 0 ]; then $ECHO -e "${red}:: Error install $LIBRARY${end}"; fi
         done
 
 	test -f /opt/hostExplorer/hostExplorer
 	if [ $? -ne 0 ]; then
-		mkdir /opt/hostExplorer &>/dev/null; cd /opt/hostExplorer
-		curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/hostExplorer &>/dev/null
-		curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/oui_hex.txt &>/dev/null
-		chmod +x hostExplorer &>/dev/null; ln -s /opt/hostExplorer/hostExplorer /bin/hostExplorer &>/dev/null
+		$MKDIR /opt/hostExplorer &>/dev/null; cd /opt/hostExplorer
+		$CURL -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/hostExplorer &>/dev/null
+		$CURL -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/oui_hex.txt &>/dev/null
+		$CHMOD +x hostExplorer &>/dev/null; $LN -s /opt/hostExplorer/hostExplorer /bin/hostExplorer &>/dev/null
 	else
-		rm -rf /opt/hostExplorer &>/dev/null; mkdir /opt/hostExplorer &>/dev/null; cd /opt/hostExplorer
-                curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/hostExplorer &>/dev/null
-                curl -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/oui_hex.txt &>/dev/null
-                chmod +x hostExplorer &>/dev/null; ln -s /opt/hostExplorer/hostExplorer /bin/hostExplorer &>/dev/null
+		$RM -rf /opt/hostExplorer &>/dev/null; $MKDIR /opt/hostExplorer &>/dev/null; cd /opt/hostExplorer
+        $CURL -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/hostExplorer &>/dev/null
+        $CURL -O https://raw.githubusercontent.com/clhore/hostExplorer_V2/main/oui_hex.txt &>/dev/null
+        $CHMOD +x hostExplorer &>/dev/null; $LN -s /opt/hostExplorer/hostExplorer /bin/hostExplorer &>/dev/null
 	fi
 
-	echo -e "${gray}:: Proceso de instalacion terminado${end}"; ctrl_c
+	$ECHO -e "${gray}:: Proceso de instalacion terminado${end}"; ctrl_c
 }
 
 function python_scan(){
@@ -439,18 +456,18 @@ if __name__ == '__main__':
 }
 
 function extract_ip(){
-	printf 'whiptail --title "hostExplorer - by Adrián Luján Muñoz" --menu "Network info" 20 100 10' > payloud
+	printf '$WHIPTAIL --title "hostExplorer - by Adrián Luján Muñoz" --menu "Network info" 20 100 10' > payloud
 	while IFS="," read -r ID IP HOSTNAME MACADDRES ICMP TCP UDP OUI; do printf " '%s' '        ONLINE'" $IP >> payloud; done < .tmp_list
 
-	/usr/bin/bash payloud 3>&1 1>&2 2>out; rm payloud 2>/dev/null
-	echo "$(cat out)"; rm out 2>/dev/null
+	/usr/bin/bash payloud 3>&1 1>&2 2>out; $RM payloud 2>/dev/null
+	$ECHO "$(cat out)"; $RM out 2>/dev/null
 }
 
 function ip_info() {
 	while IFS="," read -r ID IP HOSTNAME MACADDRES ICMP TCP UDP OUI; do
-		local CHECK_CODE=$(printf "err = 0 if '%s' == '%s' else 1; print(err)" "$IP" "$1" | python3)
+		local CHECK_CODE=$(printf "err = 0 if '%s' == '%s' else 1; print(err)" "$IP" "$1" | $PYTHON3)
 		if [ "$CHECK_CODE" == "0" ]; then #if grep -q "$IP" <<< "$1"; then
-			whiptail --title "hostExplorer - by Adrián Luján Muñoz" --yes-button "back" --no-button "exit" --yesno "
+			$WHIPTAIL --title "hostExplorer - by Adrián Luján Muñoz" --yes-button "back" --no-button "exit" --yesno "
         Network host info:
 
 		IP :         $IP
@@ -458,7 +475,7 @@ function ip_info() {
 		MACADDRES :  $MACADDRES
 		OUI :        $OUI
 				" 16 78 3>&2 2>&1 1>&3
-			echo $?
+			$ECHO $?
 		fi
 	done < .tmp_list
 }
@@ -466,13 +483,13 @@ function ip_info() {
 function net_scan(){
 #	if [ "$GUI_MODE" == "True" ]; then variable
 
-	python_scan "$IP" "$NETWORK_MASK" "$SCAN_MODE" "$VERBOSE" "$GUI_MODE" | python3 2>/dev/null
+	python_scan "$IP" "$NETWORK_MASK" "$SCAN_MODE" "$VERBOSE" "$GUI_MODE" | $PYTHON3 2>/dev/null
 
 	if [ "$GUI_MODE" == "True" ]; then
 		local CHECK_CODE=0; while [ $CHECK_CODE -ne 1 ]; do
 			local OUTPUT_PAYLOAD="$(extract_ip)"
 			CHECK_CODE=$(ip_info "$OUTPUT_PAYLOAD")
-		done; rm .tmp_list 2>/dev/null
+		done; $RM .tmp_list 2>/dev/null
 	fi
 }
 
@@ -486,7 +503,7 @@ if [ $(id -u) -eq 0 ]; then
 	for i in "$@"; do if [[ "$i" == "--verbose" || "$i" == "-v" ]]; then VERBOSE="True"; fi; done
 
 	declare GUI_MODE="False"
-        for i in "$@"; do if [[ "$i" == "--gui" || "$i" == "-G" ]]; then GUI_MODE="True"; fi; done
+    for i in "$@"; do if [[ "$i" == "--gui" || "$i" == "-G" ]]; then GUI_MODE="True"; fi; done
 
 	declare -i INDEX=1
 	declare -A ARGUMENTS=(); declare -A VARIABLES=()
@@ -503,24 +520,21 @@ if [ $(id -u) -eq 0 ]; then
 	VARIABLES["-i"]="IP"
 
 	for i in "$@"; do
-		ARGUMENTS[$INDEX]=$i;
-		PREV_INDEX="$(expr $INDEX - 1)";
+    	INDEX=INDEX+1; ARGUMENTS[$INDEX]=$i
+    	PREV_INDEX="$(expr $INDEX - 1)";
 
-		if [[ $i == *"="* ]]; then ARGUMENT_LABEL=${i%=*}
-    		else ARGUMENT_LABEL=${ARGUMENTS[$PREV_INDEX]}; fi
+    	if [[ $i == *"="* ]]; then ARGUMENT_LABEL=${i%=*}
+    	else ARGUMENT_LABEL=${ARGUMENTS[$PREV_INDEX]}; fi
 
-  		if [[ -n $ARGUMENT_LABEL ]]; then
-    			if [[ -n ${VARIABLES[$ARGUMENT_LABEL]} ]]; then
-      				if [[ $i == *"="* ]]; then
-					declare ${VARIABLES[$ARGUMENT_LABEL]}=${i#$ARGUMENT_LABEL=}
-        			else
-					declare ${VARIABLES[$ARGUMENT_LABEL]}=${ARGUMENTS[$INDEX]}
-      				fi
-    			fi
-  		fi
+    	if ! [[ -n $ARGUMENT_LABEL ]]; then continue; fi
+    	if ! [[ -n ${VARIABLES[$ARGUMENT_LABEL]} ]]; then continue; fi
 
-  		INDEX=INDEX+1;
-	done; defauld_value
+   		if [[ $i == *"="* ]]; then
+      		declare ${VARIABLES[$ARGUMENT_LABEL]}=${i#$ARGUMENT_LABEL=};
+      		continue
+    	fi; declare ${VARIABLES[$ARGUMENT_LABEL]}=${ARGUMENTS[$INDEX]}
+
+  	done; defauld_value
 
 	if [ "${HELP_PANEL,,}" == "true" ]; then help_panel; fi
 
@@ -528,5 +542,5 @@ if [ $(id -u) -eq 0 ]; then
 
 	if [[ -n "$IP" || "$GUI_MODE" == "True" ]]; then net_scan; fi
 else
-	echo -e "${red}Ejecute el script como root${end}"
+	$ECHO -e "${red}Ejecute el script como root${end}"
 fi; ctrl_c
