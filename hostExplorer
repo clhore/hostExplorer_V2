@@ -199,10 +199,8 @@ function python_scan(){
 	printf "
 #!/bin/python3
 from ipaddress import ip_network, IPv4Address, IPv4Interface
-from progress.bar import Bar, ChargingBar
 from tabulate import tabulate
 from icmplib import ping
-from os import system
 import pandas as pd
 import threading
 import socket

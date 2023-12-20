@@ -11,10 +11,10 @@ Ejemplo de escaneo modo defauld
     
       hostExplorer -i 10.70.240.0 --mask 24
 
-<img src="img/example.png">
+<img src="img/example.png"></br>
 Si revisamos el trefico de la red, obserbaremos las peticiones icmp y dns que realiza la herramienta en el modo default(1).
-<img src="img/icmp_request.png">
-<img src="img/dns_request.png">
+<img src="img/icmp_request.png"></br>
+<img src="img/dns_request.png"></br>
 
 
 Ejemplo de escaneo TCP
@@ -22,11 +22,11 @@ Ejemplo de escaneo TCP
 
       hostExplorer -i 10.70.240.0 --mask 24 -m 2
 
-<img src="img/example_m2.png">
+<img src="img/example_m2.png"></br>
 Si revisamos el trefico de la red, obserbaremos las peticiones icmp, dns y tcp que realiza la herramienta en el modo(2)[escaneo tcp].
-<img src="img/icmp_request_m2.png">
-<img src="img/dns_request_m2.png">
-<img src="img/tcp_request_m2.png">
+<img src="img/icmp_request_m2.png"></br>
+<img src="img/dns_request_m2.png"></br>
+<img src="img/tcp_request_m2.png"></br>
 
 
 Ejemplo de escaneo UDP
@@ -34,10 +34,10 @@ Ejemplo de escaneo UDP
 
       hostExplorer -i 10.70.240.0 --mask 24 -m 3
 
-<img src="img/example_m3.png">
+<img src="img/example_m3.png"></br>
 Si revisamos el trefico de la red, obserbaremos las peticiones icmp, dns y tcp que realiza la herramienta en el modo(3)[escaneo udp].
-<img src="img/icmp_request_m3.png">
-<img src="img/dns_request_m3.png">
+<img src="img/icmp_request_m3.png"></br>
+<img src="img/dns_request_m3.png"></br>
 
 
 Instalacion automatica
@@ -55,7 +55,6 @@ Instalar las librerias de python:
     pip3 install tabulate
     pip3 install icmplib
     pip3 install python3-nmap
-    pip3 install progress
     pip3 install pandas
 
 or
