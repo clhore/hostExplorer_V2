@@ -4,6 +4,7 @@
 </div>
 <ul>
     <li>Esta herramienta cuneta con funciones, que permiten obtener IP, hostname, MAC, etc de los equipos detectados en la red.</li>
+    <li>Nueva version [multisystem]: <a href="https://github.com/clhore/hostExplorer_V3">https://github.com/clhore/hostExplorer_V3</li> 
 </ul> 
 
 Ejemplo de escaneo modo defauld
